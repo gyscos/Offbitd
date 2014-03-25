@@ -5,73 +5,38 @@ import (
 	"fmt"
 	_ "github.com/diffbot/diffbot-go-client"
 	_ "html/template"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
-	"time"
 )
 
-type Config struct {
-	port  string
-	token string
-}
-
-func getConfig() Config {
-	var config Config
-
-	// Read listening web port
-	if len(os.Args) >= 2 {
-		config.port = os.Args[1]
-	} else {
-		log.Println("Using default 8080 port")
-		config.port = "8080"
-	}
-
-	// Read token file
-	body, err := ioutil.ReadFile("token")
-	if err != nil {
-		log.Fatal("Error!! ", err)
-	}
-	config.token = string(body)
-
-	return config
-}
-
-// Update the list of articles from the sources
-func update() {
-
-}
-
-func updateLoop(ticks <-chan time.Time) {
-	// Periodically updates the articles from the sources
-	select {
-	case <-ticks:
-		// Update list
-		update()
-	}
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
+func dummyHandler(w http.ResponseWriter, r *http.Request, c Config) {
 	fmt.Fprintf(w, "HANDLING")
+}
+
+type ConfigHandler func(w http.ResponseWriter, r *http.Request, c Config)
+
+func makeHandler(h ConfigHandler, c Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		h(w, r, c)
+	}
 }
 
 func main() {
 
 	config := getConfig()
 
-	ticks := make(chan time.Time)
-	go updateLoop(ticks)
+	go updateLoop()
 
 	// Visible index
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/", makeHandler(dummyHandler, config))
+	http.HandleFunc("/options", makeHandler(dummyHandler, config))
 
 	// Machine-only API (via AJAX)
-	http.HandleFunc("/source/list", handler)
-	http.HandleFunc("/source/add", handler)
-	http.HandleFunc("/source/remove", handler)
-	http.HandleFunc("/article/list", handler)
-	http.HandleFunc("/article/get", handler)
+	http.HandleFunc("/api/source/list", makeHandler(dummyHandler, config))
+	http.HandleFunc("/api/source/add", makeHandler(dummyHandler, config))
+	http.HandleFunc("/api/source/remove", makeHandler(dummyHandler, config))
+	http.HandleFunc("/api/article/list", makeHandler(dummyHandler, config))
+	http.HandleFunc("/api/article/get", makeHandler(dummyHandler, config))
 
 	log.Println("Listening to port " + config.port + "...")
 	log.Fatal(http.ListenAndServe("localhost:"+config.port, nil))
