@@ -9,8 +9,8 @@ func update() {
 
 func updateLoop() {
 	// Periodically updates the articles from the sources
-	for {
-		// Update list
-		update()
-	}
+	// for {
+	// Update list
+	update()
+	//}
 }

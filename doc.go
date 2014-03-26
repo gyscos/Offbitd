@@ -1,6 +1,6 @@
 // offbitd project doc.go
 
 /*
-offbitd document
+Offbit daemon documentation
 */
 package main

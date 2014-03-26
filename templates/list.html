@@ -1,0 +1,61 @@
+<html>
+	<head>
+		<title>Offbit</title>
+		<link rel="stylesheet" type="text/css" href="/static/style.css">
+		<script src="/static/jquery.min.js"></script>
+		<script>
+
+			function stopEverything()
+			{
+				var e = window.event;
+				e.cancelBubble = true;
+				if (e.stopPropagation) e.stopPropagation();
+			}
+
+			function doSomething(title)
+			{
+				stopEverything();
+				if (confirm("Do you really want to remove the source " + title + " ?")) {
+					var url = "/api/source/remove/" + title;
+					$.post(url, function(result) {
+						$("div[id='"+title+"'").remove();
+					});
+				}
+			}
+		</script>
+	</head>
+
+	<body>
+		<div id="big_container">
+			<h1>Offbit</h1>
+			<div class=card>
+				{{range .Sources}}
+					<div class="element" onclick="location.href = 'view/{{.Title}}';" id="{{.Title}}">
+						<img src="/static/delete.png" class="button" onclick="doSomething('{{.Title}}');" />
+						{{if .NewMessages}}
+							<a onclick=";location.href='delete/{{.Title}}';"><img src="/static/new.png" class="button" /></a>
+						{{end}}
+
+						<span class="source_title">{{.Title}}</span><br />
+						<a href="{{.URL}}" class="source_url">{{.URL}}</a>
+						<hr width="70%"/>
+					</div>
+				{{end}}
+				{{if le 2 (len .Sources)}}
+					<div class="element" onclick="location.href = 'view/all';">
+						{{if .NewMessages}}
+							<a onclick="#"><img src="/static/new.png" class="button" /></a>
+						{{end}}
+
+						<span class="source_title">Combine all</span><br />
+						<br />
+						<hr width="70%"/>
+					</div>
+				{{end}}
+			</div>
+			<div class=card>
+				<center><a href="/options">Options</a></center>
+			</div>
+		</div>
+	</body>
+</html>
