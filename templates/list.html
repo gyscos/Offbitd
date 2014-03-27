@@ -12,15 +12,24 @@
 				if (e.stopPropagation) e.stopPropagation();
 			}
 
-			function doSomething(title)
+			function removeSource(title)
 			{
 				stopEverything();
 				if (confirm("Do you really want to remove the source " + title + " ?")) {
 					var url = "/api/source/remove/" + title;
 					$.post(url, function(result) {
-						$("div[id='"+title+"'").remove();
+						$("div[id='"+title+"'").hide('fast', function(){ $("div[id='"+title+"'").remove(); });
 					});
 				}
+			}
+
+			function addSource()
+			{
+				var url = "/api/source/add/" + $("#sourceName").val();
+				$.post(url, function(result) {
+					location.href="/edit/"+result
+					//alert(result);
+				});
 			}
 		</script>
 	</head>
@@ -30,19 +39,20 @@
 			<h1>Offbit</h1>
 			<div class=card>
 				{{range .Sources}}
-					<div class="element" onclick="location.href = 'view/{{.Title}}';" id="{{.Title}}">
-						<img src="/static/delete.png" class="button" onclick="doSomething('{{.Title}}');" />
+					<div class="element" onclick="location.href = '/view/{{.Title}}';" id="{{.Title}}">
+						<a href="#"><img src="/static/delete.png" class="button" onclick="removeSource('{{.Title}}');" /></a>
 						{{if .NewMessages}}
-							<a onclick=";location.href='delete/{{.Title}}';"><img src="/static/new.png" class="button" /></a>
+							<img src="/static/new.png" class="button" />
 						{{end}}
 
-						<span class="source_title">{{.Title}}</span><br />
+						<a class="source_title" href="/view/{{.Title}}">{{.Title}}</a><br />
 						<a href="{{.URL}}" class="source_url">{{.URL}}</a>
 						<hr width="70%"/>
 					</div>
 				{{end}}
+				<div id="newSource"></div>
 				{{if le 2 (len .Sources)}}
-					<div class="element" onclick="location.href = 'view/all';">
+					<div class="element" onclick="location.href = '/view/all';">
 						{{if .NewMessages}}
 							<a onclick="#"><img src="/static/new.png" class="button" /></a>
 						{{end}}
@@ -52,9 +62,11 @@
 						<hr width="70%"/>
 					</div>
 				{{end}}
+				New source: <input width="70%" name="source" id="sourceName" />
+				<input type="button" value="Add" onclick="addSource()" />
 			</div>
-			<div class=card>
-				<center><a href="/options">Options</a></center>
+			<div class="card options">
+				<a href="/options">Options</a>
 			</div>
 		</div>
 	</body>

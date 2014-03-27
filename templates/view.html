@@ -1,0 +1,44 @@
+<html>
+	<head>
+		<title>Offbit</title>
+		<link rel="stylesheet" type="text/css" href="/static/style.css">
+		<script src="/static/jquery.min.js"></script>
+		<script>
+
+			function stopEverything()
+			{
+				var e = window.event;
+				e.cancelBubble = true;
+				if (e.stopPropagation) e.stopPropagation();
+			}
+
+			function doSomething(title)
+			{
+				stopEverything();
+				if (confirm("Do you really want to remove the source " + title + " ?")) {
+					var url = "/api/source/remove/" + title;
+					$.post(url, function(result) {
+						$("div[id='"+title+"'").hide('fast', function(){ $("div[id='"+title+"'").remove(); });
+					});
+				}
+			}
+		</script>
+	</head>
+
+	<body>
+		<div id="big_container">
+			<h1>{{.Title}}</h1>
+			<div class="card options">
+				<a href="/">Back to list</a>
+			</div>
+			{{range .Articles}}
+				<div class=card>
+					{{.Title}}
+				</div>
+			{{end}}
+			<div class="card options">
+				<a href="/edit/{{.Title}}">Edit source</a>
+			</div>
+		</div>
+	</body>
+</html>

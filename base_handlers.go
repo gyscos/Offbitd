@@ -2,29 +2,28 @@ package main
 
 import (
 	"fmt"
-	_ "github.com/diffbot/diffbot-go-client"
 	"html/template"
+	"log"
 	"net/http"
 )
 
-type SourceData struct {
-	Title       string
-	URL         string
-	NewMessages bool
-}
-
 type ListData struct {
-	Sources     []SourceData
+	Sources     []Source
 	NewMessages bool
 }
 
-func handleList(w http.ResponseWriter, r *http.Request, c Config) {
+func handleList(w http.ResponseWriter, r *http.Request, c *Config) {
 	//fmt.Fprintf(w, "LIST")
 
-	var data ListData
-	data.Sources = append(data.Sources, SourceData{"Engadget", "http://engadget.com", true})
-	data.Sources = append(data.Sources, SourceData{"The Verge", "http://theverge.com", false})
-	data.NewMessages = true
+	newMessages := false
+	for _, source := range c.Sources {
+		if source.NewMessages {
+			newMessages = true
+			break
+		}
+	}
+
+	data := ListData{c.Sources, newMessages}
 
 	t, err := template.ParseFiles("templates/list.html")
 	if err != nil {
@@ -33,4 +32,22 @@ func handleList(w http.ResponseWriter, r *http.Request, c Config) {
 	}
 
 	t.Execute(w, data)
+}
+
+func handleView(w http.ResponseWriter, r *http.Request, c *Config) {
+	target := r.URL.Path[len("/view/"):]
+	source := c.FindSource(target)
+	if source == nil {
+		// Could not find source
+		log.Println("Error: could not find source " + target)
+		return
+	}
+
+	t, err := template.ParseFiles("templates/view.html")
+	if err != nil {
+		fmt.Fprintln(w, "Error loading template: ", err)
+		return
+	}
+
+	t.Execute(w, source)
 }
