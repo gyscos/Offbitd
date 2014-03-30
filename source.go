@@ -5,44 +5,71 @@ import (
 	diffbot "github.com/diffbot/diffbot-go-client"
 	"io/ioutil"
 	"log"
-	"strings"
+	"os"
+	"time"
 )
 
 var maxFileLength int = 60
 
-func sanify(url string) string {
-	result := strings.Replace(url, "/", "_", -1)
-	if len(result) > maxFileLength {
-		result = result[:maxFileLength]
-	}
-	return result
+type Article struct {
+	*diffbot.Article
+	Read bool
 }
 
 type Source struct {
 	Title string
 	URL   string
 
-	NewMessages   bool
-	RefreshPeriod int
+	// TRUE if this source has some unread articles
+	NewMessages bool
 
-	Articles []*diffbot.Article `json:"-"`
+	// Overrides default refresh duration if non-null.
+	RefreshPeriod time.Duration
+
+	// List of articles from this source.
+	// Not JSON-ified since it's stored separately
+	Articles []*Article `json:"-"`
+
+	// Mainly used by html template. No need to store in json.
+	SaneTitle string `json:"-"`
 }
 
-func (s *Source) getArticles() {
+func makeSource(url string) *Source {
+	source := &Source{URL: url, Title: url}
+	source.prepare()
+
+	return source
+}
+
+func (s *Source) prepare() {
+	s.SaneTitle = sanify(s.Title)
+
+	if fileExists(s.getDataDir()) {
+		s.loadArticles()
+	} else {
+		err := os.Mkdir(s.getDataDir(), os.ModeDir|0700)
+		if err != nil {
+			log.Println("Error creating source directory:", err)
+		}
+	}
+
+}
+
+// Phase 1 - Load article list from storage
+func (s *Source) loadArticles() {
 	files, err := ioutil.ReadDir(s.getDataDir())
 	if err != nil {
 		log.Println("Could not open articles for source "+s.Title+":", err)
 	}
 
 	for _, file := range files {
-		log.Println(file.Name())
 		body, err := ioutil.ReadFile(s.getDataDir() + "/" + file.Name())
 		if err != nil {
 			log.Println("Cannot read article file:", err)
 			continue
 		}
 
-		var article diffbot.Article
+		var article Article
 		err = json.Unmarshal(body, &article)
 		if err != nil {
 			log.Println("Cannot unmarshal article:", err)
@@ -56,6 +83,8 @@ func (s *Source) getDataDir() string {
 	return "data/" + sanify(s.Title)
 }
 
+// Select the articles from the list not corresponding to an existing article.
+// Uses URLs to compare them.
 func (s *Source) filterNewArticles(items []FrontPageItem) []FrontPageItem {
 	var result []FrontPageItem
 
@@ -75,8 +104,28 @@ func (s *Source) filterNewArticles(items []FrontPageItem) []FrontPageItem {
 	return result
 }
 
+func (s *Source) setURL(url string) {
+	s.URL = url
+}
+
+func (s *Source) rename(newTitle string) {
+	if s.Title == newTitle {
+		return
+	}
+
+	oldDataDir := s.getDataDir()
+	s.Title = newTitle
+	s.SaneTitle = sanify(s.Title)
+
+	err := os.Rename(oldDataDir, s.getDataDir())
+	if err != nil {
+		log.Println("Error renaming source datadir:", err)
+	}
+}
+
+// Phase 2 - Add an article during runtime. Also save it to disk.
 func (s *Source) addArticle(article *diffbot.Article) {
-	s.Articles = append(s.Articles, article)
+	s.Articles = append(s.Articles, &Article{article, false})
 
 	// Write article to file
 	bytes, err := json.Marshal(article)

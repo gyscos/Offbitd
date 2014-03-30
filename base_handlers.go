@@ -8,7 +8,7 @@ import (
 )
 
 type ListData struct {
-	Sources     []Source
+	Sources     []*Source
 	NewMessages bool
 }
 
@@ -36,7 +36,7 @@ func handleList(w http.ResponseWriter, r *http.Request, c *Config) {
 
 func handleView(w http.ResponseWriter, r *http.Request, c *Config) {
 	target := r.URL.Path[len("/view/"):]
-	source := c.FindSource(target)
+	source := c.findSource(target)
 	if source == nil {
 		// Could not find source
 		log.Println("Error: could not find source " + target)
@@ -44,6 +44,24 @@ func handleView(w http.ResponseWriter, r *http.Request, c *Config) {
 	}
 
 	t, err := template.ParseFiles("templates/view.html")
+	if err != nil {
+		fmt.Fprintln(w, "Error loading template: ", err)
+		return
+	}
+
+	t.Execute(w, source)
+}
+
+func handleEdit(w http.ResponseWriter, r *http.Request, c *Config) {
+	target := r.URL.Path[len("/edit/"):]
+	source := c.findSource(target)
+	if source == nil {
+		// Could not find source
+		log.Println("Error: could not find source " + target)
+		return
+	}
+
+	t, err := template.ParseFiles("templates/edit.html")
 	if err != nil {
 		fmt.Fprintln(w, "Error loading template: ", err)
 		return

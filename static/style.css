@@ -51,4 +51,15 @@ h2 {
 
 .options {
 	text-align: center;
+	background-color: #F2F2F2;
+	font-weight: bold;
+}
+
+.form_title {
+	text-align: right;
+	padding-right: 20px;
+}
+
+.form_value {
+	text-align: left;
 }

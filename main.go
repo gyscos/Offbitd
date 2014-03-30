@@ -5,6 +5,7 @@ import (
 	_ "html/template"
 	"log"
 	"net/http"
+	"runtime"
 )
 
 func dummyHandler(w http.ResponseWriter, r *http.Request, c *Config) {
@@ -26,8 +27,12 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	config := getConfig()
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
+	// Load config, sources, articles... from disk
+	config := loadConfig()
+
+	// Start the update loop: it will regularly update the sources
 	go updateLoop(config)
 
 	// Visible index
@@ -36,14 +41,15 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/list", makeHandler(handleList, config))
 	http.HandleFunc("/view/", makeHandler(handleView, config))
-	http.HandleFunc("/edit/", makeHandler(dummyHandler, config))
+	http.HandleFunc("/edit/", makeHandler(handleEdit, config))
 	http.HandleFunc("/options", makeHandler(dummyHandler, config))
 
 	// Machine-only API (via AJAX)
 	http.HandleFunc("/api/source/list", makeHandler(dummyHandler, config))
-	http.HandleFunc("/api/source/add/", makeHandler(handleApiAdd, config))
+	http.HandleFunc("/api/source/add", makeHandler(handleApiAdd, config))
 	http.HandleFunc("/api/source/remove/", makeHandler(handleApiRemove, config))
-	http.HandleFunc("/api/article/list", makeHandler(dummyHandler, config))
+	http.HandleFunc("/api/source/edit/", makeHandler(handleApiEdit, config))
+	http.HandleFunc("/api/article/list/", makeHandler(dummyHandler, config))
 	http.HandleFunc("/api/article/get/", makeHandler(dummyHandler, config))
 
 	log.Println("Listening to port " + config.Port + "...")

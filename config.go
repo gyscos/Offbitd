@@ -8,18 +8,63 @@ import (
 	"time"
 )
 
+// Describes the state of the server.
 type Config struct {
-	Port  string
+
+	// Port to listen on for web ui. Cannot be changed after start.
+	Port string
+	// Diffbot token for API access.
 	Token string
 
+	// Default duration between source refresh
 	RefreshPeriod time.Duration
 
-	Sources []Source
+	// Channel to trigger a configuration dump on disk
+	SyncNeeded chan struct{}
+
+	// List of available sources
+	Sources []*Source
 }
 
-// Type used to marshal into config file
-type SourceConfig struct {
-	Sources []Source
+func (c *Config) syncOnDisk() {
+	for {
+		<-c.SyncNeeded
+
+		c.writeToFile()
+	}
+}
+
+func (c *Config) requestSync() {
+	c.SyncNeeded <- struct{}{}
+}
+
+func loadConfig() *Config {
+	log.Println("Loading configuration.")
+
+	if !fileExists("data") {
+		err := os.Mkdir("data", os.ModeDir|0700)
+		if err != nil {
+			log.Println("Error creating root data dir:", err)
+		}
+	}
+
+	var config Config
+
+	config.RefreshPeriod = 5 * time.Minute
+	config.Port = getPort()
+	config.Token = getToken()
+	config.SyncNeeded = make(chan struct{})
+
+	// Read sources
+	config.Sources = loadSources()
+	for _, source := range config.Sources {
+		source.prepare()
+	}
+
+	// Update the configuration on the disk when requested
+	go config.syncOnDisk()
+
+	return &config
 }
 
 func getPort() string {
@@ -45,14 +90,14 @@ func getToken() string {
 	return token
 }
 
-func getSources() []Source {
+func loadSources() []*Source {
 	body, err := ioutil.ReadFile("data/sources.json")
 	if err != nil {
 		log.Println("Cannot read source file: ", err)
 		return nil
 	}
 
-	var source SourceConfig
+	source := struct{ Sources []*Source }{}
 	err = json.Unmarshal(body, &source)
 	if err != nil {
 		log.Println("Error reading sources file: ", err)
@@ -62,33 +107,17 @@ func getSources() []Source {
 	return source.Sources
 }
 
-func getConfig() *Config {
-	var config Config
-
-	config.RefreshPeriod = 5 * time.Minute
-	config.Port = getPort()
-	config.Token = getToken()
-	// Read sources
-
-	config.Sources = getSources()
-	for _, source := range config.Sources {
-		source.getArticles()
-	}
-
-	return &config
-}
-
-func (c *Config) FindSourceId(title string) int {
+func (c *Config) findSourceId(title string) int {
 
 	for i, source := range c.Sources {
-		if source.Title == title {
+		if sanify(source.Title) == title {
 			return i
 		}
 	}
 	return -1
 }
 
-func (c *Config) FindSource(title string) *Source {
+func (c *Config) findSource(title string) *Source {
 	if title == "all" {
 		source := &Source{Title: "All"}
 		for _, s := range c.Sources {
@@ -96,15 +125,15 @@ func (c *Config) FindSource(title string) *Source {
 		}
 		return source
 	}
-	i := c.FindSourceId(title)
+	i := c.findSourceId(title)
 	if i == -1 {
 		return nil
 	}
-	return &c.Sources[i]
+	return c.Sources[i]
 }
 
 func (c *Config) writeToFile() {
-	sourceConfig := SourceConfig{c.Sources}
+	sourceConfig := struct{ Sources []*Source }{c.Sources}
 	bytes, err := json.Marshal(sourceConfig)
 	if err != nil {
 		log.Println("Error marshalling sources: ", err)
@@ -117,25 +146,27 @@ func (c *Config) writeToFile() {
 
 }
 
-func (c *Config) AddSource(source Source) {
+func (c *Config) addSource(url string) {
+	source := makeSource(url)
 	c.Sources = append(c.Sources, source)
 
-	err := os.Mkdir(source.getDataDir(), os.ModeDir|0700)
-	if err != nil {
-		log.Println("Error creating source directory:", err)
-	}
-
-	c.writeToFile()
+	c.requestSync()
 }
 
-func (c *Config) RemoveSource(title string) {
-	i := c.FindSourceId(title)
+func (c *Config) removeSource(title string) {
+	i := c.findSourceId(title)
 	if i == -1 {
 		log.Println("Error: count not find " + title)
 		return
 	}
-	os.RemoveAll(c.Sources[i].getDataDir())
+
+	log.Println("Deleting source data: ", c.Sources[i].getDataDir())
+	dataDir := c.Sources[i].getDataDir()
+	// Don't inadvertently delete the root datadir !
+	if dataDir != "/data/" {
+		os.RemoveAll(c.Sources[i].getDataDir())
+	}
 	c.Sources = append(c.Sources[:i], c.Sources[i+1:]...)
-	c.writeToFile()
+	c.requestSync()
 
 }

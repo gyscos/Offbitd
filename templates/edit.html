@@ -1,0 +1,47 @@
+<html>
+	<head>
+		<title>Offbit</title>
+		<link rel="stylesheet" type="text/css" href="/static/style.css">
+		<script src="/static/jquery.min.js"></script>
+		<script>
+			function saveSettings(title) {
+				t = $("#title").val();
+				u = $("#url").val();
+				$.post("/api/source/edit/" + title, {title:t, url:u},
+					function(result) {
+						location.href="/view/"+result;
+					});
+			}
+
+			function retrieveTitle(title) {
+
+			}
+		</script>
+	</head>
+
+	<body>
+		<div id="big_container">
+			<h1>{{.Title}}</h1>
+			<div class="card options">
+				<a href="/view/{{.SaneTitle}}">Back to article list</a>
+			</div>
+			<form>
+			<div class=card>
+				<table style="margin:auto;">
+					<tr><td class="form_title">Source name</td>
+					<td><input id="title" value="{{.Title}}" /> <input type="button" value="Retrieve" onClick="retrieveTitle({{.SaneTitle}})" /></td></tr>
+
+					<tr><td class="form_title">Source URL</td>
+					<td><input id="url" value="{{.URL}}" /></td></tr>
+
+					<tr><td class="form_title">Refresh interval in minutes<br />(0 for default)</td>
+					<td><input id="refreshPeriod" size="3" value="{{.RefreshPeriod}}" /></td></tr>
+				</table>
+			</div>
+			<div class="card options">
+				<input type="reset" style="margin-right:20px;" /> <input type="button" value="Save" style="margin-left:20px;" onClick="saveSettings({{.SaneTitle}})" />
+			</div>
+			</form>
+		</div>
+	</body>
+</html>

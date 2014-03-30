@@ -25,7 +25,8 @@
 
 			function addSource()
 			{
-				var url = "/api/source/add/" + $("#sourceName").val();
+				var target = $("#sourceName").val();
+				var url = "/api/source/add?target=" + encodeURIComponent(target);
 				$.post(url, function(result) {
 					location.href="/edit/"+result
 					//alert(result);
@@ -39,13 +40,13 @@
 			<h1>Offbit</h1>
 			<div class=card>
 				{{range .Sources}}
-					<div class="element" onclick="location.href = '/view/{{.Title}}';" id="{{.Title}}">
-						<a href="#"><img src="/static/delete.png" class="button" onclick="removeSource('{{.Title}}');" /></a>
+					<div class="element" onclick="location.href = '/view/{{.SaneTitle}}';" id="{{.Title}}">
+						<a href="#"><img src="/static/delete.png" class="button" onclick="removeSource('{{.SaneTitle}}');" /></a>
 						{{if .NewMessages}}
 							<img src="/static/new.png" class="button" />
 						{{end}}
 
-						<a class="source_title" href="/view/{{.Title}}">{{.Title}}</a><br />
+						<a class="source_title" href="/view/{{.SaneTitle}}">{{.Title}}</a><br />
 						<a href="{{.URL}}" class="source_url">{{.URL}}</a>
 						<hr width="70%"/>
 					</div>
