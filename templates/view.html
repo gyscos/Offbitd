@@ -4,15 +4,20 @@
 		<link rel="stylesheet" type="text/css" href="/static/style.css">
 		<script src="/static/jquery.min.js"></script>
 		<script>
+			function refreshList(title) {
+				$.post("/api/source/refresh/" + title, function(result) {
 
+				});
+			}
 		</script>
 	</head>
 
 	<body>
 		<div id="big_container">
 			<h1>{{.Title}}</h1>
-			<div class="card options">
+			<div class="card back">
 				<a href="/">Back to list</a>
+				<a href="#" style="float:right;" onClick="refreshList({{.SaneTitle}})">Refresh</a>
 			</div>
 			{{range .Articles}}
 				<div class=card>
@@ -21,7 +26,7 @@
 			{{end}}
 			{{if .SaneTitle}}
 			<div class="card options">
-				<a href="/edit/{{.SaneTitle}}">Edit source</a>
+				<a href="/edit/{{.SaneTitle}}" style="margin:auto;display:block;">Edit source</a>
 			</div>
 			{{end}}
 		</div>

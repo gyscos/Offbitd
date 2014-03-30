@@ -38,11 +38,20 @@ func handleApiEdit(w http.ResponseWriter, r *http.Request, c *Config) {
 		return
 	}
 
-	log.Println("New Title:", r.FormValue("title"))
-
 	source.rename(r.FormValue("title"))
 	source.setURL(r.FormValue("url"))
 	c.requestSync()
 
 	fmt.Fprint(w, source.SaneTitle)
+}
+
+func handleApiRefresh(w http.ResponseWriter, r *http.Request, c *Config) {
+	title := r.URL.Path[len("/api/source/refresh/"):]
+	source := c.findSource(title)
+	if source == nil {
+		log.Println("Error: could not find source " + title)
+		fmt.Fprint(w, "error")
+		return
+	}
+	// Need a better update loop...
 }

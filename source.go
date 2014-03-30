@@ -124,8 +124,9 @@ func (s *Source) rename(newTitle string) {
 }
 
 // Phase 2 - Add an article during runtime. Also save it to disk.
-func (s *Source) addArticle(article *diffbot.Article) {
-	s.Articles = append(s.Articles, &Article{article, false})
+func (s *Source) addArticle(rawArticle *diffbot.Article) {
+	article := &Article{rawArticle, false}
+	s.Articles = append(s.Articles, article)
 
 	// Write article to file
 	bytes, err := json.Marshal(article)

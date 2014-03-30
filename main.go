@@ -49,6 +49,7 @@ func main() {
 	http.HandleFunc("/api/source/add", makeHandler(handleApiAdd, config))
 	http.HandleFunc("/api/source/remove/", makeHandler(handleApiRemove, config))
 	http.HandleFunc("/api/source/edit/", makeHandler(handleApiEdit, config))
+	http.HandleFunc("/api/source/refresh/", makeHandler(dummyHandler, config))
 	http.HandleFunc("/api/article/list/", makeHandler(dummyHandler, config))
 	http.HandleFunc("/api/article/get/", makeHandler(dummyHandler, config))
 

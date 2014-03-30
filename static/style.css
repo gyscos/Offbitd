@@ -49,8 +49,13 @@ h2 {
 	border: 2px outset #E6E6E6;
 }
 
+.back {
+	background-color: #F2F2F2;
+	font-weight: bold;
+}
+
 .options {
-	text-align: center;
+	text-align:center;
 	background-color: #F2F2F2;
 	font-weight: bold;
 }
