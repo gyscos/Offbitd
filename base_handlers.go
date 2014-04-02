@@ -69,3 +69,14 @@ func handleEdit(w http.ResponseWriter, r *http.Request, c *Config) {
 
 	t.Execute(w, source)
 }
+
+func handleOptions(w http.ResponseWriter, r *http.Request, c *Config) {
+
+	t, err := template.ParseFiles("templates/options.html")
+	if err != nil {
+		fmt.Fprintln(w, "Error loading template: ", err)
+		return
+	}
+
+	t.Execute(w, nil)
+}

@@ -1,0 +1,37 @@
+<html>
+	<head>
+		<title>Offbit</title>
+		<link rel="stylesheet" type="text/css" href="/static/style.css">
+		<script src="/static/jquery.min.js"></script>
+		<script>
+			function saveSettings() {
+			}
+
+		</script>
+	</head>
+
+	<body>
+		<div id="big_container">
+			<div class="card options">
+				<h1>Options</h1>
+			</div>
+			<div class="card back">
+				<a href="/">Back to list</a>
+			</div>
+			<form>
+			<div class="card middle">
+				<table style="margin:auto;">
+					<tr><td class="form_title">Source name</td>
+					<td><input id="title" value="" /></td></tr>
+
+					<tr><td class="form_title">Refresh interval in minutes</td>
+					<td><input id="refreshPeriod" size="3" value="0" /></td></tr>
+				</table>
+			</div>
+			<div class="card options">
+				<input type="reset" style="margin-right:20px;" /> <input type="button" value="Save" style="margin-left:20px;" onClick="saveSettings()" />
+			</div>
+			</form>
+		</div>
+	</body>
+</html>

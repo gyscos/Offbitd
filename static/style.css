@@ -1,6 +1,8 @@
 body {
 	background-color: #EEE;
 	color: #222;
+	font-family: helvetica;
+
 }
 
 a {
@@ -49,6 +51,12 @@ h2 {
 	border: 2px outset #E6E6E6;
 }
 
+.middle {
+	margin-left: 20px;
+	margin-right: 20px;
+
+}
+
 .back {
 	background-color: #F2F2F2;
 	font-weight: bold;
@@ -67,4 +75,24 @@ h2 {
 
 .form_value {
 	text-align: left;
+}
+
+.new .article_title {
+	font-size: 1.2em;
+}
+
+.new .article_date {
+	font-size: 1em;
+}
+
+.read .article_title {
+	font-size: 1em;
+}
+
+.read .article_date {
+	font-size: 0.7em;
+}
+
+.article_content {
+	text-align:justify;
 }

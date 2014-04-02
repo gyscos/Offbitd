@@ -13,7 +13,8 @@ var maxFileLength int = 60
 
 type Article struct {
 	*diffbot.Article
-	Read bool
+	PubDate time.Time
+	Read    bool
 }
 
 type Source struct {
@@ -123,9 +124,19 @@ func (s *Source) rename(newTitle string) {
 	}
 }
 
+func (s *Source) getArticle(url string) *Article {
+	for _, a := range s.Articles {
+		if a.Url == url {
+			return a
+		}
+	}
+
+	return nil
+}
+
 // Phase 2 - Add an article during runtime. Also save it to disk.
 func (s *Source) addArticle(rawArticle *diffbot.Article) {
-	article := &Article{rawArticle, false}
+	article := &Article{rawArticle, time.Now(), false}
 	s.Articles = append(s.Articles, article)
 
 	// Write article to file

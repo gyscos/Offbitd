@@ -9,19 +9,56 @@
 
 				});
 			}
+
+			function toggleArticle(target, articleUrl) {
+				if ($("#"+target).html() == "") {
+					showArticle(target, articleUrl);
+				} else {
+					hideArticle(target, articleUrl);
+				}
+			}
+
+			function hideArticle(target, articleUrl) {
+				if($("#"+target).parent().hasClass("new")) {
+					$.post("/api/article/read/"+source+"?url="+articleUrl);
+					$("#"+target).parent().removeClass("new");
+					$("#"+target).parent().addClass("old");
+				}
+				$("#" + target).hide('fast', function() {$("#"+target).html("");});
+
+			}
+
+			function showArticle(target, articleUrl) {
+				source = {{.SaneTitle}};
+				// alert("ah ?");
+				$.get("/api/article/get/"+source+"?url="+articleUrl, function(result) {
+					$("#" + target).hide();
+					$("#" + target).html(result);
+					$("#" + target).show('fast');
+					// $("Test!!!").insertAfter("#article_0");
+					// alert(result);
+				});
+
+			}
 		</script>
 	</head>
 
 	<body>
 		<div id="big_container">
-			<h1>{{.Title}}</h1>
+			<div class="card options">
+				<h1>{{.Title}}</h1>
+			</div>
 			<div class="card back">
 				<a href="/">Back to list</a>
 				<a href="#" style="float:right;" onClick="refreshList({{.SaneTitle}})">Refresh</a>
 			</div>
-			{{range .Articles}}
-				<div class=card>
-					{{.Title}}
+			{{range $i, $e := .Articles}}
+				<div class="card middle element {{if .Read}}read{{else}}new{{end}}" onClick="toggleArticle('article_{{$i}}', {{.Url}})">
+					<div class="article_title">{{.Title}}</div>
+					{{ if .Date}}
+						<div class="article_date">{{.Date}}</div>
+					{{end}}
+					<div class="article_content" id="article_{{$i}}" style="margin:10px;" hidden="true"></div>
 				</div>
 			{{end}}
 			{{if .SaneTitle}}

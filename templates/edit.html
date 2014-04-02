@@ -21,12 +21,14 @@
 
 	<body>
 		<div id="big_container">
-			<h1>{{.Title}}</h1>
+			<div class="card options">
+				<h1>{{.Title}}</h1>
+			</div>
 			<div class="card back">
 				<a href="/view/{{.SaneTitle}}">Back to article list</a>
 			</div>
 			<form>
-			<div class=card>
+			<div class="card middle">
 				<table style="margin:auto;">
 					<tr><td class="form_title">Source name</td>
 					<td><input id="title" value="{{.Title}}" /> <input type="button" value="Retrieve" onClick="retrieveTitle({{.SaneTitle}})" /></td></tr>

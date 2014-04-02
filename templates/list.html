@@ -37,8 +37,10 @@
 
 	<body>
 		<div id="big_container">
-			<h1>Offbit</h1>
-			<div class=card>
+			<div class="card options">
+				<h1>Offbit</h1>
+			</div>
+			<div class="card middle">
 				{{range .Sources}}
 					<div class="element" onclick="location.href = '/view/{{.SaneTitle}}';" id="{{.Title}}">
 						<a href="#"><img src="/static/delete.png" class="button" onclick="removeSource('{{.SaneTitle}}');" /></a>

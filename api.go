@@ -55,3 +55,46 @@ func handleApiRefresh(w http.ResponseWriter, r *http.Request, c *Config) {
 	}
 	// Need a better update loop...
 }
+
+func handleApiGetArticle(w http.ResponseWriter, r *http.Request, c *Config) {
+	log.Println("Received request:", r.URL.Path)
+	title := r.URL.Path[len("/api/article/get/"):]
+	source := c.findSource(title)
+	if source == nil {
+		log.Println("Error: could not find source " + title)
+		fmt.Fprint(w, "error")
+		return
+	}
+
+	article := source.getArticle(r.FormValue("url"))
+	if article == nil {
+		log.Println("Error: could not find article " + title + "/" + r.FormValue("url"))
+		fmt.Fprint(w, "error")
+		return
+	}
+
+	fmt.Fprintf(w, article.Text)
+}
+
+func handleApiReadArticle(w http.ResponseWriter, r *http.Request, c *Config) {
+	log.Println("Received request:", r.URL.Path)
+	title := r.URL.Path[len("/api/article/read/"):]
+	source := c.findSource(title)
+	if source == nil {
+		log.Println("Error: could not find source " + title)
+		fmt.Fprint(w, "error")
+		return
+	}
+
+	article := source.getArticle(r.FormValue("url"))
+	if article == nil {
+		log.Println("Error: could not find article " + title + "/" + r.FormValue("url"))
+		fmt.Fprint(w, "error")
+		return
+	}
+
+	article.Read = true
+}
+
+func handleApiListArticles(w http.ResponseWriter, r *http.Request, c *Config) {
+}
