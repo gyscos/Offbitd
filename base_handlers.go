@@ -78,5 +78,5 @@ func handleOptions(w http.ResponseWriter, r *http.Request, c *Config) {
 		return
 	}
 
-	t.Execute(w, nil)
+	t.Execute(w, struct{ RefreshPeriod float64 }{c.RefreshPeriod.Minutes()})
 }

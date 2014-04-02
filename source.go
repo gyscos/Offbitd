@@ -33,6 +33,8 @@ type Source struct {
 
 	// Mainly used by html template. No need to store in json.
 	SaneTitle string `json:"-"`
+
+	SyncNeeded chan *Article `json:"-"`
 }
 
 func makeSource(url string) *Source {
@@ -44,6 +46,9 @@ func makeSource(url string) *Source {
 
 func (s *Source) prepare() {
 	s.SaneTitle = sanify(s.Title)
+	s.SyncNeeded = make(chan *Article)
+
+	go s.syncArticlesOnDisk()
 
 	if fileExists(s.getDataDir()) {
 		s.loadArticles()
@@ -134,18 +139,35 @@ func (s *Source) getArticle(url string) *Article {
 	return nil
 }
 
+func (s *Source) markArticleRead(url string) {
+	article := s.getArticle(url)
+	if article == nil {
+		log.Println("Error: could not find article " + s.Title + "/" + url)
+		return
+	}
+
+	article.Read = true
+	s.SyncNeeded <- article
+}
+
+func (s *Source) syncArticlesOnDisk() {
+	for article := range s.SyncNeeded {
+
+		// Write article to file
+		bytes, err := json.Marshal(article)
+		if err != nil {
+			log.Println("Error marshaling article:", err)
+		}
+		err = ioutil.WriteFile(s.getDataDir()+"/"+sanify(article.Url), bytes, 0600)
+		if err != nil {
+			log.Println("Error writing article file:", err)
+		}
+	}
+}
+
 // Phase 2 - Add an article during runtime. Also save it to disk.
 func (s *Source) addArticle(rawArticle *diffbot.Article) {
 	article := &Article{rawArticle, time.Now(), false}
 	s.Articles = append(s.Articles, article)
-
-	// Write article to file
-	bytes, err := json.Marshal(article)
-	if err != nil {
-		log.Println("Error marshaling article:", err)
-	}
-	err = ioutil.WriteFile(s.getDataDir()+"/"+sanify(article.Url), bytes, 0600)
-	if err != nil {
-		log.Println("Error writing article file:", err)
-	}
+	s.SyncNeeded <- article
 }

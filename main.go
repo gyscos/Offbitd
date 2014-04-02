@@ -53,6 +53,7 @@ func main() {
 	http.HandleFunc("/api/article/list/", makeHandler(handleApiListArticles, config))
 	http.HandleFunc("/api/article/get/", makeHandler(handleApiGetArticle, config))
 	http.HandleFunc("/api/article/read/", makeHandler(handleApiReadArticle, config))
+	http.HandleFunc("/api/options", makeHandler(handleApiOptions, config))
 
 	log.Println("Listening to port " + config.Port + "...")
 	log.Fatal(http.ListenAndServe("localhost:"+config.Port, nil))

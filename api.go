@@ -5,6 +5,8 @@ import (
 	_ "github.com/diffbot/diffbot-go-client"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 func handleApiAdd(w http.ResponseWriter, r *http.Request, c *Config) {
@@ -57,7 +59,6 @@ func handleApiRefresh(w http.ResponseWriter, r *http.Request, c *Config) {
 }
 
 func handleApiGetArticle(w http.ResponseWriter, r *http.Request, c *Config) {
-	log.Println("Received request:", r.URL.Path)
 	title := r.URL.Path[len("/api/article/get/"):]
 	source := c.findSource(title)
 	if source == nil {
@@ -77,7 +78,6 @@ func handleApiGetArticle(w http.ResponseWriter, r *http.Request, c *Config) {
 }
 
 func handleApiReadArticle(w http.ResponseWriter, r *http.Request, c *Config) {
-	log.Println("Received request:", r.URL.Path)
 	title := r.URL.Path[len("/api/article/read/"):]
 	source := c.findSource(title)
 	if source == nil {
@@ -86,15 +86,19 @@ func handleApiReadArticle(w http.ResponseWriter, r *http.Request, c *Config) {
 		return
 	}
 
-	article := source.getArticle(r.FormValue("url"))
-	if article == nil {
-		log.Println("Error: could not find article " + title + "/" + r.FormValue("url"))
-		fmt.Fprint(w, "error")
-		return
-	}
-
-	article.Read = true
+	source.markArticleRead(r.FormValue("url"))
 }
 
 func handleApiListArticles(w http.ResponseWriter, r *http.Request, c *Config) {
+}
+
+func handleApiOptions(w http.ResponseWriter, r *http.Request, c *Config) {
+	p, err := strconv.ParseFloat(r.FormValue("refreshPeriod"), 64)
+	if err != nil {
+		log.Println("Error during period conversion!")
+		return
+	}
+
+	c.RefreshPeriod = time.Duration(p * float64(time.Minute))
+	log.Println("Refresh Period is now", c.RefreshPeriod)
 }

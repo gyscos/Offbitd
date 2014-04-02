@@ -5,6 +5,10 @@
 		<script src="/static/jquery.min.js"></script>
 		<script>
 			function saveSettings() {
+				p = $("#refreshPeriod").val();
+				$.post("/api/options", {refreshPeriod:p}, function(result) {
+					alert("Saved!");
+				});
 			}
 
 		</script>
@@ -21,11 +25,8 @@
 			<form>
 			<div class="card middle">
 				<table style="margin:auto;">
-					<tr><td class="form_title">Source name</td>
-					<td><input id="title" value="" /></td></tr>
-
 					<tr><td class="form_title">Refresh interval in minutes</td>
-					<td><input id="refreshPeriod" size="3" value="0" /></td></tr>
+					<td><input id="refreshPeriod" size="3" value="{{.RefreshPeriod}}" /></td></tr>
 				</table>
 			</div>
 			<div class="card options">
