@@ -3,11 +3,81 @@
 		<title>Offbit</title>
 		<link rel="stylesheet" type="text/css" href="/static/style.css">
 		<script src="/static/jquery.min.js"></script>
+	</head>
+
+	<body>
+		<div id="big_container">
+			<div class="card options">
+				<h1>{{.Title}}</h1>
+			</div>
+			<div id="card_back" class="card back">
+				<a href="/">Back to list</a>
+				<a href="#" style="float:right;" onClick="refreshList({{.SaneTitle}})">Refresh</a>
+			</div>
+			{{if .SaneTitle}}
+			<div class="card options">
+				<a href="/edit/{{.SaneTitle}}" style="margin:auto;display:block;">Edit source</a>
+			</div>
+			{{end}}
+		</div>
+
 		<script>
 			function refreshList(title) {
 				$.post("/api/source/refresh/" + title, function(result) {
 
 				});
+			}
+
+			function fastFillArticles(title) {
+				var i = 1;
+				var url="/api/article/list/" + title;
+				// alert("Accessing " + url);
+				$.getJSON(url, function(result) {
+					// alert(result);
+					result.Articles.forEach(function(article) {
+						// alert(article.Title);
+						addArticle(i, article.Url, article.Title, article.Date, article.Author, article.Text, article.Read, true);
+						i++;
+					});
+				});
+			}
+
+			function addArticle(i, url, title, date, author, text, read, fast) {
+				// Prepend the article
+				// alert("Taada!");
+
+				titleDiv = $("<div />");
+				titleDiv.addClass("article_title");
+				titleDiv.html(title);
+
+				dateDiv = $("<div />");
+				dateDiv.addClass("article_date");
+				dateDiv.html(date)
+
+				contentDiv = $("<div />");
+				contentDiv.addClass("article_content");
+				contentDiv.attr("id", "article_"+i);
+				contentDiv.hide();
+				contentDiv.html("");
+
+				articleDiv = $("<div />");
+				articleDiv.addClass("card middle element");
+
+				if (read)
+					articleDiv.addClass("read");
+				else
+					articleDiv.addClass("new");
+
+				articleDiv.html(titleDiv);
+				titleDiv.after(dateDiv);
+				dateDiv.after(contentDiv);
+
+				articleDiv.click(function() {
+					toggleArticle("article_"+i, url);
+				});
+
+
+				$("#card_back").after(articleDiv);
 			}
 
 			function toggleArticle(target, articleUrl) {
@@ -38,34 +108,10 @@
 					// $("Test!!!").insertAfter("#article_0");
 					// alert(result);
 				});
-
 			}
-		</script>
-	</head>
 
-	<body>
-		<div id="big_container">
-			<div class="card options">
-				<h1>{{.Title}}</h1>
-			</div>
-			<div class="card back">
-				<a href="/">Back to list</a>
-				<a href="#" style="float:right;" onClick="refreshList({{.SaneTitle}})">Refresh</a>
-			</div>
-			{{range $i, $e := .Articles}}
-				<div class="card middle element {{if .Read}}read{{else}}new{{end}}" onClick="toggleArticle('article_{{$i}}', {{.Url}})">
-					<div class="article_title">{{.Title}}</div>
-					{{ if .Date}}
-						<div class="article_date">{{.Date}}</div>
-					{{end}}
-					<div class="article_content" id="article_{{$i}}" style="margin:10px;" hidden="true"></div>
-				</div>
-			{{end}}
-			{{if .SaneTitle}}
-			<div class="card options">
-				<a href="/edit/{{.SaneTitle}}" style="margin:auto;display:block;">Edit source</a>
-			</div>
-			{{end}}
-		</div>
+			fastFillArticles({{.Title}});
+		</script>
+
 	</body>
 </html>

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	_ "github.com/diffbot/diffbot-go-client"
 	"log"
@@ -58,6 +59,7 @@ func handleApiRefresh(w http.ResponseWriter, r *http.Request, c *Config) {
 	// Need a better update loop...
 }
 
+// Get an article content
 func handleApiGetArticle(w http.ResponseWriter, r *http.Request, c *Config) {
 	title := r.URL.Path[len("/api/article/get/"):]
 	source := c.findSource(title)
@@ -77,6 +79,7 @@ func handleApiGetArticle(w http.ResponseWriter, r *http.Request, c *Config) {
 	fmt.Fprintf(w, article.Text)
 }
 
+// Mark an article as read
 func handleApiReadArticle(w http.ResponseWriter, r *http.Request, c *Config) {
 	title := r.URL.Path[len("/api/article/read/"):]
 	source := c.findSource(title)
@@ -90,6 +93,16 @@ func handleApiReadArticle(w http.ResponseWriter, r *http.Request, c *Config) {
 }
 
 func handleApiListArticles(w http.ResponseWriter, r *http.Request, c *Config) {
+	title := r.URL.Path[len("/api/article/read/"):]
+	source := c.findSource(title)
+
+	bytes, err := json.Marshal(struct{ Articles []*Article }{source.Articles})
+	if err != nil {
+		log.Println("Error sending article list:", err)
+		fmt.Fprint(w, "error")
+		return
+	}
+	fmt.Fprintf(w, string(bytes))
 }
 
 func handleApiOptions(w http.ResponseWriter, r *http.Request, c *Config) {

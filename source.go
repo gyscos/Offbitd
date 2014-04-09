@@ -11,12 +11,6 @@ import (
 
 var maxFileLength int = 60
 
-type Article struct {
-	*diffbot.Article
-	PubDate time.Time
-	Read    bool
-}
-
 type Source struct {
 	Title string
 	URL   string
@@ -167,7 +161,7 @@ func (s *Source) syncArticlesOnDisk() {
 
 // Phase 2 - Add an article during runtime. Also save it to disk.
 func (s *Source) addArticle(rawArticle *diffbot.Article) {
-	article := &Article{rawArticle, time.Now(), false}
+	article := wrapArticle(rawArticle)
 	s.Articles = append(s.Articles, article)
 	s.SyncNeeded <- article
 }
