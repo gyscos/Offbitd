@@ -43,9 +43,9 @@
 			<div class="card middle">
 				{{range .Sources}}
 					<div class="element" onclick="location.href = '/view/{{.SaneTitle}}';" id="{{.Title}}">
-						<a href="#"><img src="/static/delete.png" class="button" onclick="removeSource('{{.SaneTitle}}');" /></a>
+						<a href="#"><img src="/static/delete.png" class="button" onclick="removeSource('{{.SaneTitle}}');" title="Remove source" /></a>
 						{{if .NewMessages}}
-							<img src="/static/new.png" class="button" />
+							<img src="/static/new.png" class="button" title="New articles!" />
 						{{end}}
 
 						<a class="source_title" href="/view/{{.SaneTitle}}">{{.Title}}</a><br />

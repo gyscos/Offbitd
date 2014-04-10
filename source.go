@@ -16,7 +16,7 @@ type Source struct {
 	URL   string
 
 	// TRUE if this source has some unread articles
-	NewMessages bool
+	NewMessages int
 
 	// Overrides default refresh duration if non-null.
 	RefreshPeriod time.Duration
@@ -140,8 +140,11 @@ func (s *Source) markArticleRead(url string) {
 		return
 	}
 
-	article.Read = true
-	s.SyncNeeded <- article
+	if !article.Read {
+		s.NewMessages--
+		article.Read = true
+		s.SyncNeeded <- article
+	}
 }
 
 func (s *Source) syncArticlesOnDisk() {
@@ -163,5 +166,6 @@ func (s *Source) syncArticlesOnDisk() {
 func (s *Source) addArticle(rawArticle *diffbot.Article) {
 	article := wrapArticle(rawArticle)
 	s.Articles = append(s.Articles, article)
+	s.NewMessages++
 	s.SyncNeeded <- article
 }

@@ -17,7 +17,7 @@ func handleList(w http.ResponseWriter, r *http.Request, c *Config) {
 
 	newMessages := false
 	for _, source := range c.Sources {
-		if source.NewMessages {
+		if source.NewMessages > 0 {
 			newMessages = true
 			break
 		}
