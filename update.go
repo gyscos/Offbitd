@@ -56,8 +56,9 @@ func updateSource(c *Config, source *Source, done chan struct{}) {
 		if section.Primary {
 			// Add all new articles
 			newItems := source.filterNewArticles(section.Items)
-			for _, item := range newItems {
-				article, err := diffbot.ParseArticle(c.Token, item.URL, &diffbot.Options{Fields: "*"})
+			for rI, _ := range newItems {
+				i := len(newItems) - 1 - rI
+				article, err := diffbot.ParseArticle(c.Token, newItems[i].URL, &diffbot.Options{Fields: "*"})
 				if err != nil {
 					log.Println("Error!", err)
 					return
