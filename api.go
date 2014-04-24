@@ -76,7 +76,7 @@ func handleApiGetArticle(w http.ResponseWriter, r *http.Request, c *Config) {
 		return
 	}
 
-	fmt.Fprintf(w, article.Text)
+	fmt.Fprint(w, article.Html)
 }
 
 // Mark an article as read
@@ -93,8 +93,13 @@ func handleApiReadArticle(w http.ResponseWriter, r *http.Request, c *Config) {
 }
 
 func handleApiListArticles(w http.ResponseWriter, r *http.Request, c *Config) {
-	title := r.URL.Path[len("/api/article/read/"):]
+	title := r.URL.Path[len("/api/article/list/"):]
 	source := c.findSource(title)
+	if source == nil {
+		log.Println("Error: could not find source " + title)
+		fmt.Fprint(w, "error")
+		return
+	}
 
 	bytes, err := json.Marshal(struct{ Articles []*Article }{source.Articles})
 	if err != nil {

@@ -36,7 +36,7 @@
 					// alert(result);
 					result.Articles.forEach(function(article) {
 						// alert(article.Title);
-						addArticle(i, article.Url, article.Title, article.Date, article.Author, article.Text, article.Read, true);
+						addArticle(i, article.Url, article.Title, article.Date, article.Author, article.Html, article.Read, true);
 						i++;
 					});
 				});
@@ -110,7 +110,7 @@
 				});
 			}
 
-			fastFillArticles({{.Title}});
+			fastFillArticles({{.SaneTitle}});
 		</script>
 
 	</body>

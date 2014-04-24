@@ -2,12 +2,13 @@ package main
 
 import (
 	diffbot "github.com/diffbot/diffbot-go-client"
+	_ "log"
 	"time"
 )
 
 type Article struct {
 	Title   string
-	Text    string
+	Html    string
 	Url     string
 	Date    string
 	Author  string
@@ -16,9 +17,10 @@ type Article struct {
 }
 
 func wrapArticle(rawArticle *diffbot.Article) *Article {
+	// log.Println("Article html: " + rawArticle.Html)
 	return &Article{
 		Title:   rawArticle.Title,
-		Text:    rawArticle.Text,
+		Html:    rawArticle.Html,
 		Date:    rawArticle.Date,
 		Url:     rawArticle.Url,
 		Author:  rawArticle.Author,
